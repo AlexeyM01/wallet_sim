@@ -5,12 +5,18 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import JSONResponse
 
+from api import router as api_router
 from crud import router as crud_router
 from database import get_db
 from models import Wallet
 
 app = FastAPI()
 app.include_router(crud_router)
+
+
+@app.get("/")
+async def plug():
+    return JSONResponse(status_code=200, content={"message": "Подключение успешно"})
 
 
 @app.get("/db-status")

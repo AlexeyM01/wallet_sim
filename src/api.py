@@ -1,27 +1,40 @@
-from fastapi import HTTPException, Depends
-from sqlalchemy.orm import Session
+"""
+src/api.py
+"""
+from fastapi import HTTPException, Depends, APIRouter
+from sqlalchemy.ext.asyncio import AsyncSession
+
 import crud
 import schemas
 from database import get_db
-from main import app
+
+router = APIRouter()
 
 
-@app.post("/api/v1/wallets/{wallet_id}/operation")
-async def perform_operation(wallet_id: int, operation: schemas.Operation, db: Session = Depends(get_db)):
+@router.post("/v1/add_wallet/")
+async def add_wallet(db: AsyncSession = Depends(get_db)):
+    try:
+        response = crud.add_wallet(db)
+        return response
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/v1/wallets/{wallet_id}/operation")
+async def perform_operation(wallet_id: str, operation: schemas.Operation, db: AsyncSession = Depends(get_db)):
     if operation.operation_type not in ["DEPOSIT", "WITHDRAW"]:
         raise HTTPException(status_code=400, detail="Invalid operation type")
+    if operation.amount <= 0:
+        raise HTTPException(status_code=400, detail=f"Сумма {operation.operation_type} должна быть положительной")
+
     amount = operation.amount if operation.operation_type == "DEPOSIT" else -operation.amount
     with db.begin():
-        new_balance = crud.update_balance(wallet_id, amount)
-    if new_balance is None:
-        raise HTTPException(status_code=404, detail="Wallet not found")
-    return {"new_balance": new_balance}
+        response = await crud.update_balance(wallet_id, amount, db)
+        new_balance = response["balance"]
+        return {"new_balance": new_balance}
 
 
-@app.get("/api/v1/wallets/{wallet_id}", response_model=schemas.WalletBalance)
-async def get_balance(wallet_id: str, db: Session = Depends(get_db)):
-    wallet = crud.get_wallet(db, wallet_id)
-    if wallet is None:
-        raise HTTPException(status_code=404, detail="Wallet not found")
-
+@router.get("/v1/wallets/{wallet_id}")
+async def get_balance(wallet_id: str, db: AsyncSession = Depends(get_db)):
+    wallet = crud.get_wallet(wallet_id, db)
     return {"balance": wallet.balance}
