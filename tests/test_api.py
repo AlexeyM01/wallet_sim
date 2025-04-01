@@ -1,6 +1,7 @@
 """
 tests/test_api.py
 """
+
 import pytest
 import uuid
 from fastapi import status
@@ -50,7 +51,7 @@ async def test_update_balance_correct_deposit(async_client):
 
     update_response = await async_client.post(
         f"/api/v1/wallets/{wallet_id}/operation",
-        json={"operation_type": "DEPOSIT", "amount": 100}
+        json={"operation_type": "DEPOSIT", "amount": 100},
     )
     assert update_response.status_code == status.HTTP_200_OK
     assert update_response.json()["balance"] == 100.0
@@ -63,12 +64,12 @@ async def test_update_balance_correct_withdraw(async_client):
 
     await async_client.post(
         f"/api/v1/wallets/{wallet_id}/operation",
-        json={"operation_type": "DEPOSIT", "amount": 200}
+        json={"operation_type": "DEPOSIT", "amount": 200},
     )
 
     update_response = await async_client.post(
         f"/api/v1/wallets/{wallet_id}/operation",
-        json={"operation_type": "WITHDRAW", "amount": 150}
+        json={"operation_type": "WITHDRAW", "amount": 150},
     )
     assert update_response.status_code == status.HTTP_200_OK
     assert update_response.json()["balance"] == 50.0
@@ -81,7 +82,7 @@ async def test_update_balance_withdraw_not_enough_funds(async_client):
 
     update_response = await async_client.post(
         f"/api/v1/wallets/{wallet_id}/operation",
-        json={"operation_type": "WITHDRAW", "amount": 100}
+        json={"operation_type": "WITHDRAW", "amount": 100},
     )
     assert update_response.status_code == status.HTTP_400_BAD_REQUEST
     assert update_response.json()["detail"] == "Не хватает средств для снятия"
@@ -94,7 +95,7 @@ async def test_update_balance_invalid_operation(async_client):
 
     update_response = await async_client.post(
         f"/api/v1/wallets/{wallet_id}/operation",
-        json={"operation_type": "INVALID_OPERATION", "amount": 100}
+        json={"operation_type": "INVALID_OPERATION", "amount": 100},
     )
     assert update_response.status_code == status.HTTP_400_BAD_REQUEST
     assert update_response.json()["detail"] == "Некорректный тип операции"
@@ -107,7 +108,7 @@ async def test_update_balance_negative_amount(async_client):
 
     update_response = await async_client.post(
         f"/api/v1/wallets/{wallet_id}/operation",
-        json={"operation_type": "DEPOSIT", "amount": -50}
+        json={"operation_type": "DEPOSIT", "amount": -50},
     )
     assert update_response.status_code == status.HTTP_400_BAD_REQUEST
     assert update_response.json()["detail"] == "Сумма DEPOSIT должна быть положительной"
@@ -120,7 +121,7 @@ async def test_update_balance_zero_amount(async_client):
 
     update_response = await async_client.post(
         f"/api/v1/wallets/{wallet_id}/operation",
-        json={"operation_type": "DEPOSIT", "amount": 0}
+        json={"operation_type": "DEPOSIT", "amount": 0},
     )
     assert update_response.status_code == status.HTTP_400_BAD_REQUEST
     assert update_response.json()["detail"] == "Сумма DEPOSIT должна быть положительной"

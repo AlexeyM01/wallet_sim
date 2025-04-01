@@ -1,6 +1,7 @@
 """
 tests/conftest.py
 """
+
 import httpx
 import pytest
 from httpx import AsyncClient

@@ -12,8 +12,9 @@ from models import Wallet
 
 app = FastAPI()
 app.include_router(crud_router)
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 
 
 class LoggingMiddleware(BaseHTTPMiddleware):
@@ -40,6 +41,11 @@ async def check_db_connection(db: AsyncSession = Depends(get_db)):
         wallet_query = select(Wallet).where(Wallet.id == wallet_id)
         result = await db.execute(wallet_query)
         wallet = result.scalars().first()
-        return JSONResponse(status_code=200, content={"message": "Подключение к базе данных успешно"})
+        return JSONResponse(
+            status_code=200, content={"message": "Подключение к базе данных успешно"}
+        )
     except Exception as e:
-        return JSONResponse(status_code=500, content=f"При подключении к базе данных произошла ошибка {e}")
+        return JSONResponse(
+            status_code=500,
+            content=f"При подключении к базе данных произошла ошибка {e}",
+        )
